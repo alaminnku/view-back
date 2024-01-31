@@ -2,6 +2,7 @@ import { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
 type PermissionsGrated = { loading: boolean; status: boolean };
 
+// Check camera and microphone access
 export async function checkPermission(
   setPermissionsGranted: Dispatch<SetStateAction<PermissionsGrated>>
 ) {
@@ -19,6 +20,7 @@ export async function checkPermission(
   setPermissionsGranted({ loading: false, status: permissionState });
 }
 
+// Request camera and microphones access
 export async function requestMediaAccess(
   setPermissionsGranted: Dispatch<SetStateAction<PermissionsGrated>>
 ) {
@@ -33,7 +35,8 @@ export async function requestMediaAccess(
   }
 }
 
-export async function getCameras(
+// Get cameras and microphones
+export async function getMedia(
   setCameras: Dispatch<SetStateAction<MediaDeviceInfo[]>>,
   setMicrophones: Dispatch<SetStateAction<MediaDeviceInfo[]>>
 ) {
@@ -50,17 +53,36 @@ export async function getCameras(
   }
 }
 
+// Get audio and video stream
 export async function getStream(
-  camera: MediaDeviceInfo,
-  microphone: MediaDeviceInfo,
+  selectedCamera: MediaDeviceInfo,
+  selectedMicrophone: MediaDeviceInfo,
   videoRef: MutableRefObject<HTMLVideoElement | null>
 ) {
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { deviceId: camera.deviceId },
-    audio: { deviceId: microphone.deviceId },
+    video: { deviceId: selectedCamera.deviceId },
+    audio: { deviceId: selectedMicrophone.deviceId },
   });
 
   if (videoRef.current) {
     videoRef.current.srcObject = stream;
   }
+}
+
+// Start transcription
+export function startRecognition(
+  recognition: SpeechRecognition,
+  setTranscript: Dispatch<SetStateAction<string>>
+) {
+  if (!recognition) return;
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[event.results.length - 1][0].transcript;
+    setTranscript(transcript);
+  };
+  recognition.onerror = (err) => {
+    console.log(err);
+  };
+
+  recognition.start();
 }

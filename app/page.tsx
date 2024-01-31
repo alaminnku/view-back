@@ -3,9 +3,10 @@
 import Permission from '@components/home/Permission';
 import {
   checkPermission,
-  getCameras,
+  getMedia,
   getStream,
   requestMediaAccess,
+  startRecognition,
 } from '@lib/media';
 import { useEffect, useRef, useState } from 'react';
 
@@ -23,23 +24,33 @@ export default function Home() {
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string>();
+  const [transcript, setTranscript] = useState<string>('');
+  const [recognition, setRecognition] = useState<SpeechRecognition>();
 
   // Check if permissions are granted
   useEffect(() => {
     checkPermission(setPermissionsGranted);
+
+    if ('webkitSpeechRecognition' in window) {
+      let recognition = new webkitSpeechRecognition();
+      recognition.continuous = true;
+      setRecognition(recognition);
+    }
   }, []);
 
   // Get cameras or request media access
   useEffect(() => {
     if (allowAccess) requestMediaAccess(setPermissionsGranted);
-    if (permissionsGranted) getCameras(setCameras, setMicrophones);
+    if (permissionsGranted) getMedia(setCameras, setMicrophones);
     if (selectedCam && selectedMic)
       getStream(selectedCam, selectedMic, videoRef);
   }, [allowAccess, permissionsGranted, selectedCam, selectedMic]);
 
+  // useEffect(() => {}, [selectedCam, selectedMic]);
+
   // Start recording
   function startRecording() {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !recognition) return;
 
     const stream = videoRef.current.srcObject as MediaStream;
     mediaRecorder.current = new MediaRecorder(stream);
@@ -57,15 +68,17 @@ export default function Home() {
       setVideoUrl(url);
     };
 
-    mediaRecorder.current.start();
     setIsRecording(true);
+    mediaRecorder.current.start();
+    startRecognition(recognition, setTranscript);
   }
 
   // Strop recording
   function stopRecording() {
-    if (!mediaRecorder.current) return;
+    if (!mediaRecorder.current || !recognition) return;
 
     mediaRecorder.current.stop();
+    recognition.stop();
     setIsRecording(false);
   }
 
@@ -123,7 +136,7 @@ export default function Home() {
 
       {selectedCam && selectedMic && (
         <div>
-          <video ref={videoRef} autoPlay></video>
+          <video ref={videoRef} autoPlay muted></video>
 
           {!isRecording && (
             <button onClick={startRecording}>Start Recording</button>
