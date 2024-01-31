@@ -12,8 +12,10 @@ import { useEffect, useRef, useState } from 'react';
 export default function Home() {
   const [allowAccess, setAllowAccess] = useState(false);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
-  const [selectedCamera, setSelectedCamera] = useState<MediaDeviceInfo>();
-  const video = useRef<HTMLVideoElement | null>(null);
+  const [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCam, setSelectedCam] = useState<MediaDeviceInfo>();
+  const [selectedMic, setSelectedMic] = useState<MediaDeviceInfo>();
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [permissionsGranted, setPermissionsGranted] = useState({
     loading: true,
     status: false,
@@ -29,16 +31,17 @@ export default function Home() {
 
   // Get cameras or request media access
   useEffect(() => {
-    if (permissionsGranted) getCameras(setCameras);
-    if (selectedCamera) getStream(selectedCamera, video);
     if (allowAccess) requestMediaAccess(setPermissionsGranted);
-  }, [allowAccess, permissionsGranted, selectedCamera]);
+    if (permissionsGranted) getCameras(setCameras, setMicrophones);
+    if (selectedCam && selectedMic)
+      getStream(selectedCam, selectedMic, videoRef);
+  }, [allowAccess, permissionsGranted, selectedCam, selectedMic]);
 
   // Start recording
   function startRecording() {
-    if (!video.current) return;
+    if (!videoRef.current) return;
 
-    const stream = video.current.srcObject as MediaStream;
+    const stream = videoRef.current.srcObject as MediaStream;
     mediaRecorder.current = new MediaRecorder(stream);
 
     const chunks: Blob[] = [];
@@ -84,9 +87,8 @@ export default function Home() {
 
       {permissionsGranted.status && cameras.length && (
         <select
-          id='cameraSelect'
           onChange={(e) =>
-            setSelectedCamera(
+            setSelectedCam(
               cameras.find((camera) => camera.deviceId === e.target.value)
             )
           }
@@ -99,10 +101,29 @@ export default function Home() {
           ))}
         </select>
       )}
+      {permissionsGranted.status && microphones.length && (
+        <select
+          onChange={(e) =>
+            setSelectedMic(
+              microphones.find(
+                (microphone) => microphone.deviceId === e.target.value
+              )
+            )
+          }
+        >
+          <option value=''>-- Select Microphone --</option>
+          {microphones.map((microphone) => (
+            <option key={microphone.deviceId} value={microphone.deviceId}>
+              {microphone.label ||
+                `Microphone ${microphone.deviceId.slice(0, 5)}`}
+            </option>
+          ))}
+        </select>
+      )}
 
-      {selectedCamera && (
+      {selectedCam && selectedMic && (
         <div>
-          <video ref={video} autoPlay></video>
+          <video ref={videoRef} autoPlay></video>
 
           {!isRecording && (
             <button onClick={startRecording}>Start Recording</button>

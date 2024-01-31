@@ -19,19 +19,6 @@ export async function checkPermission(
   setPermissionsGranted({ loading: false, status: permissionState });
 }
 
-export async function getStream(
-  camera: MediaDeviceInfo,
-  video: MutableRefObject<HTMLVideoElement | null>
-) {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { deviceId: camera.deviceId },
-  });
-
-  if (video.current) {
-    video.current.srcObject = stream;
-  }
-}
-
 export async function requestMediaAccess(
   setPermissionsGranted: Dispatch<SetStateAction<PermissionsGrated>>
 ) {
@@ -47,13 +34,33 @@ export async function requestMediaAccess(
 }
 
 export async function getCameras(
-  setCameras: Dispatch<SetStateAction<MediaDeviceInfo[]>>
+  setCameras: Dispatch<SetStateAction<MediaDeviceInfo[]>>,
+  setMicrophones: Dispatch<SetStateAction<MediaDeviceInfo[]>>
 ) {
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const cameras = devices.filter((device) => device.kind === 'videoinput');
+    const microphones = devices.filter(
+      (device) => device.kind === 'audioinput'
+    );
     setCameras(cameras);
+    setMicrophones(microphones);
   } catch (err) {
     console.log(err);
+  }
+}
+
+export async function getStream(
+  camera: MediaDeviceInfo,
+  microphone: MediaDeviceInfo,
+  videoRef: MutableRefObject<HTMLVideoElement | null>
+) {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { deviceId: camera.deviceId },
+    audio: { deviceId: microphone.deviceId },
+  });
+
+  if (videoRef.current) {
+    videoRef.current.srcObject = stream;
   }
 }
