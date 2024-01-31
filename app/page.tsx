@@ -46,8 +46,6 @@ export default function Home() {
       getStream(selectedCam, selectedMic, videoRef);
   }, [allowAccess, permissionsGranted, selectedCam, selectedMic]);
 
-  // useEffect(() => {}, [selectedCam, selectedMic]);
-
   // Start recording
   function startRecording() {
     if (!videoRef.current || !recognition) return;

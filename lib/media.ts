@@ -83,6 +83,5 @@ export function startRecognition(
   recognition.onerror = (err) => {
     console.log(err);
   };
-
   recognition.start();
 }
