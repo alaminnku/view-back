@@ -38,14 +38,17 @@ export default function Home() {
     }
   }, []);
 
-  // Get cameras or request media access
+  // Request media access
   useEffect(() => {
     if (allowAccess) requestMediaAccess(setPermissions);
   }, [allowAccess]);
 
+  // Get cameras and microphones
   useEffect(() => {
     if (permissions.granted) getMedia(setCameras, setMicrophones);
   }, [permissions]);
+
+  // Get stream from selected cam and mic
   useEffect(() => {
     if (selectedCam && selectedMic)
       getStream(selectedCam, selectedMic, videoRef);
@@ -166,9 +169,11 @@ export default function Home() {
         </div>
       )}
 
-      <textarea rows={20} cols={90} style={{ border: '1px solid black' }}>
-        {transcript}
-      </textarea>
+      {transcript && (
+        <textarea rows={20} cols={90} style={{ border: '1px solid black' }}>
+          {transcript}
+        </textarea>
+      )}
     </main>
   );
 }
