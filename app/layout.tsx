@@ -6,7 +6,7 @@ import { ReactNode } from 'react';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Camera App',
+  title: 'View Back',
 };
 
 export default function RootLayout({
