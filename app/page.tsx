@@ -17,9 +17,9 @@ export default function Home() {
   const [selectedCam, setSelectedCam] = useState<MediaDeviceInfo>();
   const [selectedMic, setSelectedMic] = useState<MediaDeviceInfo>();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [permissionsGranted, setPermissionsGranted] = useState({
-    loading: true,
-    status: false,
+  const [permissions, setPermissions] = useState({
+    checking: true,
+    granted: false,
   });
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -29,7 +29,7 @@ export default function Home() {
 
   // Check if permissions are granted
   useEffect(() => {
-    checkPermission(setPermissionsGranted);
+    checkPermission(setPermissions);
 
     if ('webkitSpeechRecognition' in window) {
       let recognition = new webkitSpeechRecognition();
@@ -40,11 +40,16 @@ export default function Home() {
 
   // Get cameras or request media access
   useEffect(() => {
-    if (allowAccess) requestMediaAccess(setPermissionsGranted);
-    if (permissionsGranted) getMedia(setCameras, setMicrophones);
+    if (allowAccess) requestMediaAccess(setPermissions);
+  }, [allowAccess]);
+
+  useEffect(() => {
+    if (permissions.granted) getMedia(setCameras, setMicrophones);
+  }, [permissions]);
+  useEffect(() => {
     if (selectedCam && selectedMic)
       getStream(selectedCam, selectedMic, videoRef);
-  }, [allowAccess, permissionsGranted, selectedCam, selectedMic]);
+  }, [selectedCam, selectedMic]);
 
   // Start recording
   function startRecording() {
@@ -92,11 +97,11 @@ export default function Home() {
 
   return (
     <main>
-      {!permissionsGranted.loading && !permissionsGranted.status && (
+      {!permissions.checking && !permissions.granted && (
         <Permission setAllowAccess={setAllowAccess} />
       )}
 
-      {permissionsGranted.status && cameras.length && (
+      {permissions.granted && cameras.length && (
         <select
           onChange={(e) =>
             setSelectedCam(
@@ -112,7 +117,7 @@ export default function Home() {
           ))}
         </select>
       )}
-      {permissionsGranted.status && microphones.length && (
+      {permissions.granted && microphones.length && (
         <select
           onChange={(e) =>
             setSelectedMic(
@@ -133,22 +138,45 @@ export default function Home() {
       )}
 
       {selectedCam && selectedMic && (
-        <div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            padding: '30px 0px',
+          }}
+        >
           <video ref={videoRef} autoPlay muted></video>
 
           {!isRecording && (
-            <button onClick={startRecording}>Start Recording</button>
+            <button style={buttonStyle} onClick={startRecording}>
+              Start Recording
+            </button>
           )}
           {isRecording && (
-            <button onClick={stopRecording}>Stop Recording</button>
+            <button style={buttonStyle} onClick={stopRecording}>
+              Stop Recording
+            </button>
           )}
           {videoUrl && (
-            <button onClick={() => downloadVideo(videoUrl)}>
+            <button style={buttonStyle} onClick={() => downloadVideo(videoUrl)}>
               Download video
             </button>
           )}
         </div>
       )}
+
+      <textarea rows={20} cols={90} style={{ border: '1px solid black' }}>
+        {transcript}
+      </textarea>
     </main>
   );
 }
+
+const buttonStyle = {
+  border: 'none',
+  padding: '8px 16px',
+  color: 'white',
+  backgroundColor: 'black',
+  marginTop: '16px',
+};

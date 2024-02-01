@@ -1,10 +1,10 @@
 import { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
-type PermissionsGrated = { loading: boolean; status: boolean };
+type PermissionsGrated = { checking: boolean; granted: boolean };
 
 // Check camera and microphone access
 export async function checkPermission(
-  setPermissionsGranted: Dispatch<SetStateAction<PermissionsGrated>>
+  setPermissions: Dispatch<SetStateAction<PermissionsGrated>>
 ) {
   const cameraPermission = await navigator.permissions.query({
     name: 'camera' as PermissionName,
@@ -17,19 +17,19 @@ export async function checkPermission(
     cameraPermission.state === 'granted' &&
     microPhonePermission.state === 'granted';
 
-  setPermissionsGranted({ loading: false, status: permissionState });
+  setPermissions({ checking: false, granted: permissionState });
 }
 
 // Request camera and microphones access
 export async function requestMediaAccess(
-  setPermissionsGranted: Dispatch<SetStateAction<PermissionsGrated>>
+  setPermissions: Dispatch<SetStateAction<PermissionsGrated>>
 ) {
   try {
     await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: true,
     });
-    setPermissionsGranted({ loading: false, status: true });
+    setPermissions({ checking: false, granted: true });
   } catch (err) {
     console.log(err);
   }
