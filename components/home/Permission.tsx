@@ -6,12 +6,32 @@ type Props = {
 
 export default function Permission({ setAllowAccess }: Props) {
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <p>Needs access to camera and microphone? Do you want to allow?</p>
       <div>
-        <button onClick={() => setAllowAccess(true)}>Yes</button>
-        <button onClick={() => setAllowAccess(false)}>No</button>
+        <button style={buttonStyle} onClick={() => setAllowAccess(true)}>
+          Yes
+        </button>
+        <button style={buttonStyle} onClick={() => setAllowAccess(false)}>
+          No
+        </button>
       </div>
     </div>
   );
 }
+
+const buttonStyle = {
+  border: 'none',
+  padding: '8px 16px',
+  color: 'white',
+  backgroundColor: 'black',
+  marginTop: '16px',
+  marginRight: '16px',
+};

@@ -99,46 +99,56 @@ export default function Home() {
   }
 
   return (
-    <main>
+    <main
+      style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       {!permissions.checking && !permissions.granted && (
         <Permission setAllowAccess={setAllowAccess} />
       )}
 
-      {permissions.granted && cameras.length && (
-        <select
-          onChange={(e) =>
-            setSelectedCam(
-              cameras.find((camera) => camera.deviceId === e.target.value)
-            )
-          }
-        >
-          <option value=''>-- Select Camera --</option>
-          {cameras.map((camera) => (
-            <option key={camera.deviceId} value={camera.deviceId}>
-              {camera.label || `Camera ${camera.deviceId.slice(0, 5)}`}
-            </option>
-          ))}
-        </select>
-      )}
-      {permissions.granted && microphones.length && (
-        <select
-          onChange={(e) =>
-            setSelectedMic(
-              microphones.find(
-                (microphone) => microphone.deviceId === e.target.value
+      <div>
+        {permissions.granted && cameras.length && (
+          <select
+            onChange={(e) =>
+              setSelectedCam(
+                cameras.find((camera) => camera.deviceId === e.target.value)
               )
-            )
-          }
-        >
-          <option value=''>-- Select Microphone --</option>
-          {microphones.map((microphone) => (
-            <option key={microphone.deviceId} value={microphone.deviceId}>
-              {microphone.label ||
-                `Microphone ${microphone.deviceId.slice(0, 5)}`}
-            </option>
-          ))}
-        </select>
-      )}
+            }
+          >
+            <option value=''>-- Select Camera --</option>
+            {cameras.map((camera) => (
+              <option key={camera.deviceId} value={camera.deviceId}>
+                {camera.label || `Camera ${camera.deviceId.slice(0, 5)}`}
+              </option>
+            ))}
+          </select>
+        )}
+        {permissions.granted && microphones.length && (
+          <select
+            onChange={(e) =>
+              setSelectedMic(
+                microphones.find(
+                  (microphone) => microphone.deviceId === e.target.value
+                )
+              )
+            }
+          >
+            <option value=''>-- Select Microphone --</option>
+            {microphones.map((microphone) => (
+              <option key={microphone.deviceId} value={microphone.deviceId}>
+                {microphone.label ||
+                  `Microphone ${microphone.deviceId.slice(0, 5)}`}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
 
       {selectedCam && selectedMic && (
         <div
